@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ninth Life</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9f2ef;--panel:#ffffff;--ink:#1d2b3a;--muted:#5d6f7e;--accent:#f2a900;--accent-ink:#2a1d00;--mint:#2f9e8a;--line:#c9dcd6;--fur:#e8571f;--fur2:#15110f;
+color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121b2b;--panel:#1c2840;--ink:#eaf1f7;--muted:#9fb1c3;--accent:#ffc83d;--accent-ink:#2a1d00;--mint:#58d0b9;--line:#2c3b58;--fur:#f4693a;--fur2:#0c0a09;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121b2b;--panel:#1c2840;--ink:#eaf1f7;--muted:#9fb1c3;--accent:#ffc83d;--accent-ink:#2a1d00;--mint:#58d0b9;--line:#2c3b58;--fur:#f4693a;--fur2:#0c0a09;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.4}
+.app{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,420px);gap:16px;max-width:980px;margin:0 auto;padding:16px;min-height:100%}
+@media (max-width:720px){.app{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:2px solid var(--line);border-radius:28px;padding:20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;overflow:hidden}
+h1{margin:0;font-size:1.5rem;font-weight:600}
+.count{font-size:clamp(2.4rem,9vw,3.6rem);font-weight:600;color:var(--accent);line-height:1;margin-top:4px}
+.sub{color:var(--muted);margin:0}
+#cat{background:none;border:0;padding:0;cursor:pointer;width:min(300px,70vw);touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .08s}
+#cat:active{transform:scale(.94) rotate(-2deg)}
+#cat:focus-visible,.item:focus-visible,.small:focus-visible{outline:3px solid var(--mint);outline-offset:3px;border-radius:16px}
+#cat svg{width:100%;height:auto;display:block}
+.pop{position:absolute;pointer-events:none;font-weight:600;color:var(--accent);font-size:1.6rem;white-space:nowrap;line-height:1;animation:rise .9s ease-out forwards}
+@keyframes rise{to{transform:translate(var(--dx,0px),-90px) rotate(var(--rot,0deg));opacity:0}}
+@media (prefers-reduced-motion:reduce){.pop{animation-duration:.01s}#cat{transition:none}}
+.side{display:flex;flex-direction:column;gap:12px}
+.box{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:12px}
+.box h2{margin:0 0 8px;font-size:1.05rem}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer}
+.item:hover:not(:disabled){border-color:var(--mint)}
+.item:disabled{opacity:.5;cursor:not-allowed}
+.item .n{font-weight:600}.item .own{font-weight:600;color:var(--mint);text-align:right}
+.item .d{color:var(--muted);font-size:.85rem}.item .c{text-align:right;font-size:.9rem}
+.bar{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.small{font:inherit;font-size:.8rem;background:none;border:2px solid var(--line);color:var(--muted);border-radius:10px;padding:4px 10px;cursor:pointer}
+.empty{color:var(--muted);margin:0;font-size:.9rem}
+.bonus{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;font:inherit;font-weight:600;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:12px 20px;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer;max-width:92vw}
+.bonus:disabled{cursor:default}
+#rb.off{opacity:.5;cursor:not-allowed}
+#lbname{font:inherit;flex:1;min-width:0;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:4px 8px}
+.lbrow{display:flex;justify-content:space-between;gap:8px;font-size:.9rem;padding:4px 8px;border-radius:8px;background:var(--bg)}
+.lbrow.me{outline:2px solid var(--mint)}
+#lbtabs .small.on{color:var(--ink);border-color:var(--mint)}
+#cs{position:fixed;inset:0;z-index:100;background:rgba(5,6,12,.96);display:flex;overflow-y:auto;padding:24px;animation:fadein 1.4s}
+#cs[hidden]{display:none}
+#cs.full{background:radial-gradient(circle at 50% 40%,#2e1a12,#05060c 70%)}
+.cbox{max-width:560px;margin:auto;color:#d8dde6;font-size:1.1rem;line-height:1.7}
+.ct{font-size:1.2rem;color:#8f9bb0;letter-spacing:.1em;text-transform:uppercase;margin:0 0 18px}
+.cl p{margin:0 0 14px;min-height:1.7em}
+#cn{margin-top:12px;color:#d8dde6;border-color:#55607a}
+@keyframes fadein{from{opacity:0}}
+#cat{border-radius:42%;box-shadow:0 0 calc(10px + var(--lv,0) * 4px) calc(var(--lv,0) * 1px) color-mix(in srgb,var(--glow,#ffc83d) 40%,transparent)}
+body.boosted #cat{animation:pulse .8s ease-in-out infinite alternate}
+@keyframes pulse{to{transform:scale(1.05)}}
+#tail{transform-box:fill-box;transform-origin:0% 100%;animation:swish 2.4s ease-in-out infinite alternate}
+@keyframes swish{to{transform:rotate(14deg)}}
+.lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(0)}97%{transform:scaleY(1)}}
+.spk{position:absolute;width:8px;height:8px;margin:-4px;border-radius:50%;background:var(--glow,#ffc83d);pointer-events:none;animation:burst .6s ease-out forwards}
+@keyframes burst{to{transform:translate(var(--sx),var(--sy)) scale(.2);opacity:0}}
+#fx{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#fx span{position:absolute;bottom:-40px;opacity:.55;will-change:transform;animation:drift linear infinite}
+@keyframes drift{to{transform:translateY(-115vh)}}
+.flash{position:fixed;inset:0;background:#fff;z-index:50;pointer-events:none;animation:fl .9s ease-out forwards}
+@keyframes fl{from{opacity:.9}to{opacity:0}}
+@media (prefers-reduced-motion:reduce){#fx{display:none}#tail,.lid,body.boosted #cat{animation:none}.spk{display:none}}
+.boosttag{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:20;background:var(--mint);color:#062019;font-weight:600;border-radius:999px;padding:6px 16px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.boosttag[hidden]{display:none}
+#pawL,#pawR{transition:transform .15s ease-out;transform-box:fill-box;transform-origin:50% 100%}
+@media (prefers-reduced-motion:reduce){#pawL,#pawR{transition:none}}
+.stage,.box{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130'%3E%3Cg fill='%23809099' fill-opacity='.16'%3E%3Cpath d='M16 30 L18 8 L32 22 Z M44 30 L42 8 L28 22 Z'/%3E%3Ccircle cx='30' cy='38' r='16'/%3E%3Cellipse cx='95' cy='104' rx='11' ry='9'/%3E%3Ccircle cx='82' cy='90' r='4.5'/%3E%3Ccircle cx='90' cy='84' r='4.5'/%3E%3Ccircle cx='100' cy='84' r='4.5'/%3E%3Ccircle cx='108' cy='90' r='4.5'/%3E%3C/g%3E%3C/svg%3E")}
+.app{position:relative;z-index:1}
+#rb{margin-top:8px;font-weight:600;text-align:center;display:block}
+.bonus:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="stage">
+    <h1>Ninth Life</h1>
+    <p class="sub" id="tagline">Pet the cat. Build a purr empire.</p>
+    <div class="count" id="count" aria-live="off">0</div>
+    <p class="sub"><span id="ps">0</span> <span class="curn">purrs</span> per second · <span id="pc">1</span> per pet</p>
+    <button id="cat" aria-label="Pet the cat">
+      <svg viewBox="0 0 300 280" aria-hidden="true">
+        <path id="tail" d="M232 238 C286 228 298 168 262 142" stroke="var(--fur2)" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <ellipse cx="150" cy="235" rx="95" ry="40" fill="var(--fur2)"/>
+        <ellipse cx="150" cy="232" rx="34" ry="22" fill="var(--fur)"/><path d="M78 228 q8 6 14 -3 M222 228 q-8 6 -14 -3" stroke="var(--fur)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M62 120 L58 38 L118 82 Z" fill="var(--fur)"/><path d="M238 120 L242 38 L182 82 Z" fill="var(--fur)"/>
+        <path d="M72 100 L70 58 L102 84 Z" fill="#f2a6b5"/><path d="M228 100 L230 58 L198 84 Z" fill="#f2a6b5"/>
+        <ellipse cx="150" cy="150" rx="105" ry="88" fill="var(--fur)"/>
+        <path d="M52 150 l24 4 M55 165 l22 -3 M248 150 l-24 4 M245 165 l-22 -3" stroke="var(--fur2)" stroke-width="5" stroke-linecap="round"/>
+        <path id="crown" d="M118 70 l8 -26 l24 18 l24 -18 l8 26 Z" fill="#ffc83d" stroke="#b8860b" stroke-width="3" stroke-linejoin="round" style="display:none"/>
+        <path d="M150 64 v26 M128 68 l6 22 M172 68 l-6 22" stroke="var(--fur2)" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="108" cy="140" rx="17" ry="21" fill="#fff"/><ellipse cx="192" cy="140" rx="17" ry="21" fill="#fff"/>
+        <ellipse id="pl" cx="110" cy="142" rx="8" ry="15" fill="#1d2b3a"/><ellipse id="pr" cx="190" cy="142" rx="8" ry="15" fill="#1d2b3a"/><circle cx="104" cy="133" r="3.5" fill="#fff"/><circle cx="186" cy="133" r="3.5" fill="#fff"/><ellipse class="lid" cx="108" cy="140" rx="18" ry="22" fill="var(--fur)"/><ellipse class="lid" cx="192" cy="140" rx="18" ry="22" fill="var(--fur)"/>
+        <ellipse cx="150" cy="184" rx="34" ry="22" fill="#fff" opacity=".9"/><path d="M140 170 h20 l-10 11 Z" fill="#f2a6b5"/><circle id="nose" cx="150" cy="175" r="14" fill="transparent"/>
+        <path d="M150 181 v8 M150 189 q-10 12 -22 4 M150 189 q10 12 22 4" stroke="#1d2b3a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M95 178 l-52 -9 M95 188 l-54 4 M205 178 l52 -9 M205 188 l54 4" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <g id="pawL"><ellipse cx="100" cy="252" rx="26" ry="20" fill="var(--fur)" stroke="var(--fur2)" stroke-width="3"/><ellipse cx="100" cy="257" rx="9" ry="7" fill="#f2a6b5"/><circle cx="86" cy="247" r="4" fill="#f2a6b5"/><circle cx="95" cy="241" r="4" fill="#f2a6b5"/><circle cx="105" cy="241" r="4" fill="#f2a6b5"/><circle cx="114" cy="247" r="4" fill="#f2a6b5"/></g>
+        <g id="pawR"><ellipse cx="200" cy="252" rx="26" ry="20" fill="var(--fur)" stroke="var(--fur2)" stroke-width="3"/><ellipse cx="200" cy="257" rx="9" ry="7" fill="#f2a6b5"/><circle cx="186" cy="247" r="4" fill="#f2a6b5"/><circle cx="195" cy="241" r="4" fill="#f2a6b5"/><circle cx="205" cy="241" r="4" fill="#f2a6b5"/><circle cx="214" cy="247" r="4" fill="#f2a6b5"/></g>
+      </svg>
+    </button>
+  </main>
+  <aside class="side">
+    <section class="box"><h2>Upgrades</h2><div class="list" id="ups"></div><p class="empty" id="noups" hidden>New upgrades appear as you grow.</p></section>
+    <section class="box"><h2>Rebirth</h2><p class="sub" id="lives"></p><p class="empty" id="rbinfo"></p><button class="item" id="rb">Rebirth</button></section>
+    <section class="box"><h2>Cat crew</h2><div class="list" id="bld"></div></section>
+    <section class="box" id="lbbox" hidden><h2>Leaderboards</h2><div class="bar" id="lbtabs"></div><div class="list" id="lbrows"></div><div class="bar"><input id="lbname" maxlength="16" placeholder="Your name" aria-label="Your leaderboard name"><button class="small" id="lbsave">Save name</button></div><p class="empty" id="lbnote"></p></section>
+    <section class="box"><h2>Memories</h2><div class="list" id="story"></div></section>
+    <div class="bar"><span class="sub" id="saved">Auto-saves on this device</span><button class="small" id="reset">Reset game</button></div>
+  </aside>
+</div>
+<script>
+(function(){
+var Date={now:function(){return performance.now()}}; /* monotonic clock: changing the device clock can't stretch boosts or earn free time */
+var CREW_MAX=1; /* max owned of each crew item */
+var B=[
+ {id:'yarn',n:'Yarn ball',d:'Rolls itself. Cats stay amused.',base:15,ps:0.1},
+ {id:'laser',n:'Laser pointer farm',d:'A red dot nobody can catch.',base:100,ps:1},
+ {id:'box',n:'Cardboard fort',d:'If it fits, they sit.',base:1100,ps:8},
+ {id:'tuna',n:'Tuna mine',d:'Deep shafts, very fishy.',base:12000,ps:47},
+ {id:'cafe',n:'Cat café chain',d:'Humans pay to be ignored.',base:130000,ps:260},
+ {id:'moon',n:'Moon nap base',d:'Low gravity, long naps.',base:1400000,ps:1400}
+];
+var U=[
+ {id:'claws',n:'Soft paws',d:'Pets give 2× purrs',cost:100,type:'click',m:2},
+ {id:'chin',n:'Chin scratches',d:'Pets give 2× purrs',cost:600,type:'click',m:2},
+ {id:'catnip',n:'Catnip garden',d:'All crew make 1.5× purrs',cost:1500,type:'prod',m:1.5},
+ {id:'sun',n:'Sunbeam windows',d:'All crew make 2× purrs',cost:9000,type:'prod',m:2},
+ {id:'zoom',n:'Midnight zoomies',d:'Pets give 3× purrs',cost:40000,type:'click',m:3},
+ {id:'collar',n:'Golden collars',d:'All crew make 2× purrs',cost:250000,type:'prod',m:2},
+ {id:'wiggle',n:'Wiggle butt',d:'Pets give 3× purrs',cost:900000,type:'click',m:3,tier:1},
+ {id:'heat',n:'Heated beds',d:'All crew make 2× purrs',cost:2500000,type:'prod',m:2,tier:1},
+ {id:'sardine',n:'Sardine feast',d:'Pets give 3× purrs',cost:12000000,type:'click',m:3,tier:2},
+ {id:'robo',n:'Robo mice',d:'All crew make 2× purrs',cost:30000000,type:'prod',m:2,tier:2},
+ {id:'star',n:'Starlight fur',d:'Pets give 4× purrs',cost:150000000,type:'click',m:4,tier:3},
+ {id:'warp',n:'Warp scratching posts',d:'All crew make 3× purrs',cost:400000000,type:'prod',m:3,tier:3},
+ {id:'god',n:'Cat deity',d:'Pets give 5× purrs',cost:2000000000,type:'click',m:5,tier:4},
+ {id:'cosmos',n:'Cosmic purr engine',d:'All crew make 4× purrs',cost:6000000000,type:'prod',m:4,tier:4}
+];
+var S={purrs:0,total:0,base:0,lives:0,rebirths:0,prestige:0,stage:0,done:0,seen:{},own:{},ups:{},tc:0,td:0,rbT:0,cheated:0};
+var KEY='whiskerworks-save-v2';
+function sig(s){var h=5381,g=52711,x;for(var i=0;i<s.length;i++){x=s.charCodeAt(i);h=((h<<5)+h+x)|0;g=((g<<7)^(g>>>3)^(x*31))|0}return (h>>>0).toString(36)+(g>>>0).toString(36)}
+function nn(v){v=+v;return isFinite(v)&&v>0?v:0}
+function num(v,lo,hi){v=Math.floor(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):lo}
+function clean(d){var o=fresh(),pu=+d.purrs,to=+d.total,ba=+d.base;
+ o.total=isFinite(to)&&to>0?to:0;o.purrs=isFinite(pu)&&pu>0?Math.min(pu,o.total):0;o.base=isFinite(ba)&&ba>0?Math.min(ba,o.total):0;
+ o.rebirths=num(d.rebirths,0,8);o.lives=o.rebirths;o.stage=num(d.stage,0,5);o.done=d.done?1:0;if(o.done)o.stage=5;o.prestige=o.done?6:o.stage;
+ B.forEach(function(b){o.own[b.id]=num(d.own&&d.own[b.id],0,CREW_MAX)});U.forEach(function(u){o.ups[u.id]=num(d.ups&&d.ups[u.id],0,3)});
+ o.tc=nn(d.tc);o.td=nn(d.td);o.rbT=num(d.rbT,0,1e6);o.cheated=d.cheated?1:0;
+ Object.keys(d.seen||{}).forEach(function(k){if(/^[0-5]\.[1-9]$/.test(k))o.seen[k]=1});return o}
+try{var raw=localStorage.getItem(KEY);if(raw){var p=JSON.parse(raw);if(p&&p.d&&p.h===sig('wk|'+JSON.stringify(p.d)))S=clean(p.d)}}catch(e){}
+function $(i){return document.getElementById(i)}
+function st(el,t){if(el._t!==t){el._t=t;el.textContent=t}}
+var E={ps:$('ps'),pc:$('pc'),cur:document.querySelector('.curn'),lives:$('lives'),rbinfo:$('rbinfo')};
+function lite(){st($('count'),fmt(S.purrs))}
+function fmt(n){if(n<1000)return n<10&&n%1?n.toFixed(1):Math.floor(n).toString();
+ var s=['','K','M','B','T','Qa','Qi','Sx','Sp'],i=0;while(n>=1000&&i<s.length-1){n/=1000;i++}return n.toFixed(n<10?2:1)+s[i]}
+function cur(){return ST[S.stage].fam==='Dog family'?'growls':'purrs'}
+function upCost(u){return Math.ceil(u.cost*Math.pow(5,S.ups[u.id]||0))}
+function reqOf(){return 1e8*Math.pow(5,S.rebirths)*Math.pow(4,S.stage)}
+function cost(b){return Math.ceil(b.base*Math.pow(1.17,S.own[b.id]||0)*(1+0.5*S.rebirths))}
+function mult(t){var m=1;U.forEach(function(u){if(S.ups[u.id]&&u.type===t)m*=Math.pow(u.m,Math.min(3,S.ups[u.id]))});return m*(1+0.2*S.lives)*(Date.now()<boostEnd?2:1)*(1+S.prestige)}
+function perClick(){return mult('click')*(1+Math.floor(psBase()*0.01))*(Date.now()<cheatEnd?100000:1)}
+function psBase(){var s=0;B.forEach(function(b){s+=(S.own[b.id]||0)*b.ps});return s*mult('prod')}
+var bEls={},uEls={};
+B.forEach(function(b){
+ var e=document.createElement('button');e.className='item';
+ e.innerHTML='<span class="n">'+b.n+'</span><span class="own"></span><span class="d">'+b.d+'</span><span class="c"></span>';
+ e.onclick=function(){var c=cost(b);if((S.own[b.id]||0)<CREW_MAX&&S.purrs>=c){S.purrs-=c;S.own[b.id]=(S.own[b.id]||0)+1;draw()}};
+ e._o=e.querySelector('.own');e._c=e.querySelector('.c');$('bld').appendChild(e);bEls[b.id]=e});
+U.forEach(function(u){
+ var e=document.createElement('button');e.className='item';e.hidden=true;
+ e.innerHTML='<span class="n">'+u.n+'</span><span class="c"></span><span class="d">'+u.d+'</span>';
+ e.onclick=function(){var c=upCost(u);if((u.tier||0)<=S.rebirths&&(S.ups[u.id]||0)<3&&S.purrs>=c){S.purrs-=c;S.ups[u.id]=(S.ups[u.id]||0)+1;draw()}};
+ e._n=e.querySelector('.n');e._c=e.querySelector('.c');$('ups').appendChild(e);uEls[u.id]=e});
+function draw(){
+ st($('count'),fmt(S.purrs));
+ st(E.ps,fmt(psBase()));st(E.pc,fmt(perClick()));st(E.cur,cur());
+ var run=S.total-S.base,req=reqOf(),gain=run>=req?1:0,rb=$('rb');
+ st(E.lives,'Lives left: '+(9-S.rebirths)+' of 9. Each life lost: +20% to everything (now +'+(S.lives*20)+'%). Stories finished: '+S.prestige);
+ st(E.rbinfo,'World: '+W[S.rebirths%W.length].n+'. This run: '+fmt(run)+' '+cur()+'. Reach '+fmt(req)+' to rebirth (5× more each time). Crew costs rise 50% per rebirth. Next rebirth: '+nextInfo()+'.');
+ if(!rb.dataset.armed)st(rb,S.done?'The story is complete':S.rebirths>=8?(gain>0?'Prestige: '+ST[S.stage].n+'’s whole story':'Prestige (needs '+fmt(req)+')'):gain>0?'Rebirth for '+gain+(gain>1?' lives':' life'):'Rebirth (needs '+fmt(req)+')');
+ var off=gain<1||!cs.hidden||!!S.done;rb.setAttribute('aria-disabled',off?'true':'false');rb.classList.toggle('off',off);applyWorld();renderStory();
+ B.forEach(function(b){var e=bEls[b.id],c=cost(b);e.disabled=(S.own[b.id]||0)>=CREW_MAX||S.purrs<c;
+  st(e._o,(S.own[b.id]||0)+'/'+CREW_MAX);st(e._c,(S.own[b.id]||0)>=CREW_MAX?'MAX':fmt(c)+' '+cur())});
+ var any=false;
+ U.forEach(function(u){var e=uEls[u.id],bought=S.ups[u.id];
+  var show=(u.tier||0)<=S.rebirths&&(S.ups[u.id]||(S.total-S.base)>=u.cost*0.4);e.hidden=!show;if(show)any=true;
+  var lv=S.ups[u.id]||0,uc=upCost(u);e.disabled=lv>=3||S.purrs<uc;st(e._n,u.n+' ('+lv+'/3)');st(e._c,lv>=3?'MAX':fmt(uc)+' '+cur())});
+ $('noups').hidden=any}
+$('cat').addEventListener('click',function(ev){
+ if(!ev.isTrusted&&!inAuto)return;if(ev.isTrusted){var nw=Date.now();if(nw-lastClk<45)return;lastClk=nw}
+ var g=perClick();gain_(g);
+ if(!ev.isTrusted&&(++ac%10)){lite();return}
+ var st=document.querySelector('.stage'),r=st.getBoundingClientRect();
+ var x=ev.clientX?ev.clientX-r.left:r.width/2,y=ev.clientY?ev.clientY-r.top:r.height/2;
+ var p=document.createElement('div');p.className='pop';var cats=['🐱','😺','😸','😻','😽','🐈','🐈‍⬛'];p.textContent=cats[Math.floor(Math.random()*cats.length)]+' +'+fmt(g);p.style.setProperty('--dx',(Math.random()*80-40)+'px');p.style.setProperty('--rot',(Math.random()*50-25)+'deg');
+ p.style.left=(x-14)+'px';p.style.top=(y-24)+'px';st.appendChild(p);
+ if(ev.isTrusted)for(var k=0;k<7;k++){var q=document.createElement('i');q.className='spk';var a=Math.random()*6.28,dd=30+Math.random()*40;q.style.left=x+'px';q.style.top=y+'px';q.style.setProperty('--sx',Math.cos(a)*dd+'px');q.style.setProperty('--sy',Math.sin(a)*dd+'px');st.appendChild(q);setTimeout((function(q){return function(){q.remove()}})(q),600)}
+ setTimeout(function(){p.remove()},900);lite()});
+var last=Date.now();
+setInterval(function(){var now=Date.now(),dt=Math.min(Math.max((now-last)/1000,0),120);last=now;
+ var g=psBase()*dt;gain_(g);draw()},100);
+function save(){try{localStorage.setItem(KEY,JSON.stringify({d:S,h:sig('wk|'+JSON.stringify(S))}));$('saved').textContent='Saved just now'}catch(e){$('saved').textContent='Saving is unavailable here'}}
+setInterval(save,5000);
+$('reset').onclick=function(){twoTap($('reset'),function(){S=fresh();save();draw()})};
+var mx=0,my=0,raf=0;
+document.addEventListener('pointermove',function(e0){mx=e0.clientX;my=e0.clientY;if(!raf)raf=requestAnimationFrame(look)});
+function look(){raf=0;var e={clientX:mx,clientY:my};
+ var c=$('cat').getBoundingClientRect(),cx=c.left+c.width/2,cy=c.top+c.height*0.5;
+ var dx=Math.max(-1,Math.min(1,(e.clientX-cx)/300)),dy=Math.max(-1,Math.min(1,(e.clientY-cy)/300));
+ $('pl').setAttribute('cx',110+dx*6);$('pr').setAttribute('cx',190+dx*6);
+ $('pl').setAttribute('cy',142+dy*5);$('pr').setAttribute('cy',142+dy*5);
+ var px=Math.max(-1,Math.min(1,(e.clientX-cx)/200)),py=Math.max(-1,Math.min(1,(e.clientY-cy)/200));
+ $('pawL').style.transform='translate('+(px*24)+'px,'+(py<0?py*46:py*6)+'px) rotate('+(px*14)+'deg)';
+ $('pawR').style.transform='translate('+(px*24)+'px,'+(py<0?py*46:py*6)+'px) rotate('+(px*14)+'deg)'}
+var ac=0,inAuto=false,lastClk=0,autoEnd=0,lastT=0,offerEnd=0,nextBonus=Date.now()+600000;
+var tag=document.createElement('button');tag.className='bonus';tag.hidden=true;document.body.appendChild(tag);
+function clock(ms){var s=Math.ceil(ms/1000);return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
+tag.onclick=function(){if(offerEnd){offerEnd=0;autoEnd=Date.now()+300000;lastT=Date.now()}};
+setInterval(function(){var now=Date.now();
+ if(!autoEnd&&!offerEnd&&now>=nextBonus){offerEnd=now+60000;nextBonus=now+600000}
+ if(offerEnd&&now>=offerEnd)offerEnd=0;
+ if(autoEnd&&now>=autoEnd)autoEnd=0;
+ if(offerEnd){tag.hidden=false;tag.disabled=false;tag.textContent='🐾 Cat frenzy! Tap for 5 minutes of auto-petting'}
+ else if(autoEnd){tag.hidden=false;tag.disabled=true;tag.textContent='🐾 Auto-petting: '+clock(autoEnd-now)+' left'}
+ else tag.hidden=true},500);
+setInterval(function(){if(!autoEnd)return;var t=Math.min(Date.now(),autoEnd),n=Math.floor((t-lastT)/20);
+ if(n>0){lastT+=n*20;var v=Math.min(n,50);inAuto=true;for(var i=0;i<v;i++)$('cat').click();inAuto=false;if(n>v){var g2=perClick()*(n-v);gain_(g2)}}},20);
+function twoTap(btn,fn){var t=btn.dataset.armed;if(t){clearTimeout(+t);delete btn.dataset.armed;btn.textContent=btn.dataset.label;fn();return}
+ btn.dataset.label=btn.textContent;btn.textContent='Tap again to confirm';
+ btn.dataset.armed=setTimeout(function(){delete btn.dataset.armed;btn.textContent=btn.dataset.label;draw()},4000)}
+$('rb').onclick=function(ev){if(ev&&ev.isTrusted===false)return;if(!rbCan()){cheatTap();return}cc=0;twoTap($('rb'),function(){var gain=(S.total-S.base)>=reqOf()?1:0;if(gain<1||!cs.hidden||S.done)return;
+ var pre=S.rebirths>=8;S.rbT++;S.base=S.total;S.purrs=0;S.own={};S.ups={};
+ if(pre){var sg=S.stage;S.seen[sg+'.9']=1;S.prestige++;S.lives=0;S.rebirths=0;
+  if(sg>=ST.length-1){S.done=1;finale=1}else S.stage++;
+  flash();save();draw();play(9,sg)}
+ else{S.lives+=gain;S.rebirths++;S.seen[S.stage+'.'+S.rebirths]=1;flash();save();draw();play(S.rebirths)}})};
+var boostEnd=0,nc=0,nt=0;
+var bt=document.createElement('div');bt.className='boosttag';bt.hidden=true;document.body.appendChild(bt);
+$('cat').addEventListener('click',function(ev){if(ev.isTrusted===false||ev.target.id!=='nose')return;
+ var now=Date.now();nc=(now-nt<2000)?nc+1:1;nt=now;
+ if(nc>=10){nc=0;if(now>=boostEnd){boostEnd=now+300000;draw()}}});
+setInterval(function(){var now=Date.now();document.body.classList.toggle('boosted',now<boostEnd);if(now<boostEnd){bt.hidden=false;bt.textContent='2× boost: '+clock(boostEnd-now)}else bt.hidden=true},500);
+var W=[{n:'Sunny Garden',l:['#d8f0e4','#b9e3f5'],d:['#10261f','#12304a'],e:['🌼','🦋','🌿'],g:'#ffc83d'},
+ {n:'Neon Alley',l:['#ffd0ec','#cdb8ff'],d:['#2a0f3d','#0f1b4d'],e:['⚡','💜','🌃'],g:'#ff4fd8'},
+ {n:'Moon Base',l:['#d9e2f2','#aab8d6'],d:['#0a0f24','#1d2a52'],e:['🌙','⭐','🛰️'],g:'#9fd0ff'},
+ {n:'Candy Clouds',l:['#ffe0ee','#fff1c9'],d:['#3a1630','#40281f'],e:['🍬','🍭','☁️'],g:'#ff8fb8'},
+ {n:'Lava Lair',l:['#ffd6b8','#ffb3a1'],d:['#2b0d08','#4a1608'],e:['🔥','🌋','🐟'],g:'#ff6a2b'}];
+function nextInfo(){if(S.rebirths>=8)return'the whole story (prestige: +100% to everything forever)';var n=U.filter(function(u){return u.tier===S.rebirths+1}).length;return(n?n+' new upgrades and ':'')+'the world '+W[(S.rebirths+1)%W.length].n}
+var curW=-1;
+var fx=document.createElement('div');fx.id='fx';document.body.insertBefore(fx,document.body.firstChild);
+function applyWorld(){var wk=S.stage+':'+S.rebirths;if(curW===wk)return;curW=wk;
+ var w=W[S.rebirths%W.length],dk=matchMedia('(prefers-color-scheme: dark)').matches,c=dk?w.d:w.l;
+ fx.style.background='linear-gradient(160deg,'+c[0]+','+c[1]+')';
+ document.documentElement.style.setProperty('--glow',w.g);document.documentElement.style.setProperty('--lv',Math.min(S.lives,12));
+ $('crown').style.display=S.rebirths>0?'':'none';fx.innerHTML='';
+ var a=ST[S.stage],rs=document.documentElement.style;rs.setProperty('--fur',a.c[0]);rs.setProperty('--fur2',a.c[1]);
+ $('tagline').textContent='Pet '+a.n+', the '+a.k+'. '+a.fam+' '+(S.stage%3+1)+' of 3.';
+ for(var i=0;i<10;i++){var s=document.createElement('span');s.textContent=w.e[i%w.e.length];s.style.left=(Math.random()*100)+'%';s.style.fontSize=(14+Math.random()*22)+'px';s.style.animationDuration=(12+Math.random()*14)+'s';s.style.animationDelay=(-Math.random()*20)+'s';fx.appendChild(s)}}
+function flash(){var f=document.createElement('div');f.className='flash';document.body.appendChild(f);setTimeout(function(){f.remove()},900)}
+var C=[
+ {t:'Chapter 1: The Window',p:['You remember a window, and a woman named Mara who hummed while the kettle boiled.','Every evening you watched the street for her car. Every evening it came.','You didn’t know that was the happy part.']},
+ {t:'Chapter 2: The Quiet',p:['Mara began to cough that winter. The humming stopped first.','You slept on her chest. Dinner came later each night, and then some nights not at all.','You purred anyway. It was the only thing you knew how to give.']},
+ {t:'Chapter 3: The Door',p:['Strangers came with a carrier. Mara was not in the room.','Someone said she had passed. You didn’t know the word. You knew her smell was fading from the blanket.','The door closed behind you. It was not the door you had been waiting at.']},
+ {t:'Chapter 4: The Shelter',p:['Cage 14. Lights that never fully switched off.','The other cats cried at night. After a week they stopped, and that was worse.','You sat at the back, facing the wall, and listened for a car that was never going to come.']},
+ {t:'Chapter 5: The Second Home',p:['A family took you home. The children were kind, and loud, and had never lost anything.','The house smelled of cleaner. Nobody hummed. You waited by a door that wasn’t hers.','Two months later you were returned. The form said: not a good fit.']},
+ {t:'Chapter 6: The Cold',p:['Your coat went dull. You stopped coming to the front of the cage.','Visitors walked past the quiet ones, the older ones, the grey-faced ones.','You were all three.']},
+ {t:'Chapter 7: The Count',p:['Somewhere in there you began counting your lives. Nine, they say. You had spent most of them.','You counted the days since Mara. You lost track at 212.','You never stopped looking at the door.']},
+ {t:'Chapter 8: The Hand',p:['One evening a volunteer opened the cage and simply sat down beside you.','She didn’t try to fix anything. She just stayed, and kept a slow hand moving along your back.','Something in your chest began to rumble. You didn’t remember deciding to. Something in you remembered how.']},
+ {t:'The whole story',p:['His name was Ember. He was nineteen, which is very old for a cat.','There was no factory. There never was. The yarn, the lasers, the boxes, the tuna: small kindnesses left in a cage by tired volunteers who couldn’t save everyone.','The café was Mara’s kitchen. The moon was her window. The crew was every cat he ever shared a wall with.','Every pet was that volunteer’s hand. Every purr was a heartbeat he thought he had lost. Every rebirth was a memory he chose to live once more, because the alternative was the quiet.','On the last night she whispered, “You can rest now, Ember. Mara’s waiting by the window.” He didn’t understand the words. He understood the hand.','He purred until he didn’t have to.','Thank you for staying with him.']}];
+var cs=document.createElement('div');cs.id='cs';cs.hidden=true;
+cs.innerHTML='<div class="cbox"><p class="ct"></p><div class="cl"></div><button class="small" id="cn">Skip</button><button class="small" id="cn2" hidden>Close</button></div>';document.body.appendChild(cs);
+var typing=null;
+function play(n,sg){var st=ST[sg===undefined?S.stage:sg];var c=n>8?st.full:chap(st,n);if(!c)return;cs.hidden=false;$('cn2').hidden=true;cs.className=n>8?'full':'';
+ cs.querySelector('.ct').textContent=c.t;var L=cs.querySelector('.cl'),b=$('cn');L.innerHTML='';b.textContent='Skip';
+ var i=0,j=0,el=null,t0=Date.now();clearInterval(typing);
+ function done(){clearInterval(typing);b.textContent='Continue'}
+ typing=setInterval(function(){if(!el){if(i>=c.p.length){done();return}el=document.createElement('p');L.appendChild(el);j=0}
+  el.textContent=c.p[i].slice(0,++j);cs.scrollTop=cs.scrollHeight;if(j>=c.p[i].length+18){el=null;i++}},26);
+ b.onclick=function(){if(Date.now()-t0<1200)return;if(b.textContent==='Skip'){clearInterval(typing);L.innerHTML='';c.p.forEach(function(t){var e=document.createElement('p');e.textContent=t;L.appendChild(e)});done()}else{cs.hidden=true;if(finale){finale=0;showEnd()}}}}
+var finale=0;
+function fresh(){return{purrs:0,total:0,base:0,lives:0,rebirths:0,prestige:0,stage:0,done:0,seen:{},own:{},ups:{},tc:0,td:0,rbT:0,cheated:0}}
+function chap(st,n){var c=st.ch[n-1];return typeof c==='string'?{t:st.n+', chapter '+n,p:[c]}:c}
+var ST=[
+ {n:'Ember',k:'house cat',fam:'Cat family',c:['#e8571f','#15110f'],ch:C.slice(0,8),full:C[8]},
+ {n:'Saba',k:'lioness',fam:'Cat family',c:['#d9a441','#5e3a1a'],ch:[
+  'The grass was gold and the pride was loud. Saba learned to hunt by watching her mother’s tail.',
+  'The rains came late, then not at all. The waterholes shrank to cracked mud.',
+  'The herds moved on. The pride followed, and fewer of them arrived each week.',
+  'Her mother couldn’t keep up. Saba waited at every ridge, until she stopped waiting.',
+  'Men came with trucks and a sweet-smelling dart. She woke in a crate, rocking, in the dark.',
+  'The enclosure had a savanna painted on one wall. She paced it until she knew every crack in the paint.',
+  'Visitors tapped the glass and called her lazy. She had stopped answering to anything.',
+  'At night she pressed her side to the painted grass and listened for a roar that never came.'],
+  full:{t:'The whole story of Saba',p:['Saba was the last of her pride. She didn’t know it, because nothing in her world had a word for last.','There was no empire. The crew were the ghosts of the pride. The mines, the moon, the clicks: a keeper’s small mercies, a heated rock, a longer walk, a kind voice at closing time.','On her final evening a keeper opened the gate to the back paddock, where real grass had been left to grow. Saba lay down in it.','She purred, quietly, the way lions are not supposed to. Then she was finished with the heat, and the paint, and the waiting.']}},
+ {n:'Rani',k:'tiger',fam:'Cat family',c:['#f59a1c','#0d0c0c'],ch:[
+  'Rani was born under a tent, on sawdust, to a mother who flinched at the sound of whips.',
+  'They took her from her mother at six weeks. The tent smelled of popcorn and rain.',
+  'She learned to jump through a hoop because the alternative was hunger. The crowd called it magic.',
+  'The cheering was the loudest thing she had ever heard. She couldn’t tell it from fear.',
+  'The circus went bankrupt in spring. Rani spent three weeks in a trailer in a field, forgotten.',
+  'Someone finally opened the door. The light hurt. She didn’t know how to walk without a cage around her.',
+  'The sanctuary was green and wide. She stayed at the edge of the fence, because the edge was familiar.',
+  'Other tigers called to her from across the water. She no longer remembered how to answer.'],
+  full:{t:'The whole story of Rani',p:['Rani was twenty-three. In the wild a tiger rarely lives half that long. In captivity she had simply been made to last.','There was no factory. The crew were the animals who had worked beside her under the tent. The café was the cook who slipped her scraps. The moon was the only sky she remembered.','The clicks were a volunteer scratching behind her ears, every day, until Rani leaned into the hand.','In the end she lay in the long grass and watched the clouds. It was the first thing she had ever chosen to look at. Then her breathing slowed, and the grass was warm, and nobody asked her to jump.']}},
+ {n:'Dusty',k:'stray dog',fam:'Dog family',c:['#b0794a','#3a2618'],ch:[
+  'Dusty had a boy, and the boy had a red ball. That was the whole of his world, and it was enough.',
+  'The boy’s family left in a hurry one morning. The car was loaded. Dusty was not.',
+  'He ran behind the car for a long time. Then he stood where it had turned the corner.',
+  'He waited at the roadside for days. Cars slowed, then did not stop.',
+  'A shopkeeper tossed him scraps and a hard word. He learned which doors were never for him.',
+  'Winter. He slept behind a dumpster, curled around the memory of the red ball.',
+  'Every blue car made his tail move before he could stop it. Every blue car drove on.',
+  'He lay down under the streetlight where the car had turned. He was very tired.'],
+  full:{t:'The whole story of Dusty',p:['Dusty was eleven. The boy was a man now, and never knew.','There was no empire. The crew were the strays who shared the alley. The café was a shop that sometimes left its back door open. The moon was the streetlight he stayed under.','A girl on her way home found him, sat on the cold ground, and put her coat over him. Her hand moved along his ears, over and over: the clicks.','He wagged once, the way he had at every blue car. This time someone was there to see it.']}},
+ {n:'Ash',k:'wolf',fam:'Dog family',c:['#8d97a6','#262b34'],ch:[
+  'Ash ran with a pack of nine, and the forest was loud with them every dusk.',
+  'Roads cut the forest into pieces. The pack crossed one at a time, and each crossing cost them.',
+  'The pups were the first to go. The pack sang for them anyway.',
+  'Poison was left out for the deer that no longer came. The old male found it first.',
+  'Only four remained. They still howled every night, because silence felt like surrender.',
+  'Then three. Then two. The howls came back thinner, and from farther away.',
+  'Ash walked the border of what had been their land, calling. The only answer was the road.',
+  'He stopped howling the night he understood nobody was left to hear it.'],
+  full:{t:'The whole story of Ash',p:['Ash was the last wolf in that forest. A ranger followed his tracks for three days without ever seeing him.','There was no empire. The crew were the pack, every one of them, counted aloud in the dark. The moon was the only thing that still answered his howl.','The clicks were the ranger leaving food at the tree line, week after week, hoping.','On the last night Ash howled once more, and from far beyond the valley, faint and unsure, something howled back. He walked toward it until the forest ended.']}},
+ {n:'Cinder',k:'fox',fam:'Dog family',c:['#d4561a','#201510'],ch:[
+  'Cinder was born under a shed at the edge of a city that never fully slept.',
+  'Her mother taught her which bins were kind and which gardens had dogs.',
+  'A car took her mother on a road Cinder had been told never to cross. She crossed it three nights later, looking.',
+  'She raised her first litter in a drainage pipe. Four kits, and she gave them everything she found.',
+  'The pipe flooded in autumn. She carried them out one at a time, and counted, and counted again.',
+  'There were three. Then, after the cold snap, two.',
+  'The humans put up signs. They called her a nuisance, which was one word for hungry.',
+  'She watched her last kit leave to find a territory of its own, and understood she had done what a mother does.'],
+  full:{t:'The whole story of Cinder',p:['Cinder lived six years in a city that never learned her name.','There was no empire. The crew were the other animals of the night shift. The café was the bins behind a bakery. The moon was the orange glow of the streetlights.','On her last night a woman on a balcony put out a dish of water and sat very still. She didn’t try to touch her. The clicks were her camera, quietly saying: I see you.','Cinder drank, and curled up under the porch, and the city hummed above her like a mother’s voice.']}}];
+function showEnd(){clearInterval(typing);cs.hidden=false;cs.className='full';cs.querySelector('.ct').textContent='The End';
+ var L=cs.querySelector('.cl');L.innerHTML='';
+ ['Six animals, six lives told in full. Each of them was loved, lost, and in the end held.','The cat family is complete. The dog family is complete. There are no more stories left to tell.','Thank you for staying with every one of them.'].forEach(function(t){var e=document.createElement('p');e.textContent=t;L.appendChild(e)});
+ var b=$('cn'),k=$('cn2');b.textContent='Start over';b.onclick=function(){S=fresh();save();draw();cs.hidden=true};
+ k.hidden=false;k.onclick=function(){cs.hidden=true}}
+var skey='';
+function renderStory(){var k=Object.keys(S.seen).join();if(k===skey)return;skey=k;var L=$('story');L.innerHTML='';
+ if(!k){L.innerHTML='<p class="empty">Nothing remembered yet. Rebirth to remember.</p>';return}
+ Object.keys(S.seen).forEach(function(key){var p=key.split('.'),sg=+p[0],i=+p[1],st=ST[sg];var b=document.createElement('button');b.className='item';b.textContent=(i>8?st.full:chap(st,i)).t;b.onclick=function(){play(i,sg)};L.appendChild(b)});
+ }
+function gain_(g){S.purrs+=g;S.total+=g;if(ST[S.stage].fam==='Dog family')S.td+=g;else S.tc+=g}
+function rbCan(){return(S.total-S.base)>=reqOf()&&cs.hidden&&!S.done}
+var cheatEnd=0,cc=0,ct=0;
+function cheatTap(){var n=Date.now();cc=(n-ct<3000)?cc+1:1;ct=n;if(cc>=10){cc=0;if(n>=cheatEnd){cheatEnd=n+600000;S.cheated=1;save()}}}
+var ctag=document.createElement('div');ctag.className='boosttag';ctag.hidden=true;ctag.style.top='calc(52px + env(safe-area-inset-top,0px))';document.body.appendChild(ctag);
+setInterval(function(){var n=Date.now();if(n<cheatEnd){ctag.hidden=false;ctag.textContent='100,000× pets: '+clock(cheatEnd-n)}else ctag.hidden=true},500);
+var LB=null,uid=null,lbTab='tc',lbRows=[],lbBusy=false,lbLast='',lbName='';
+var TABS=[['tc','Purrs'],['td','Growls'],['rbT','Rebirths'],['prestige','Prestiges']];
+try{lbName=localStorage.getItem('ninthlife-name')||''}catch(e){}
+function lbDraw(){var T=$('lbtabs');
+ if(!T.children.length)TABS.forEach(function(t){var b=document.createElement('button');b.className='small';b.textContent=t[1];b.dataset.k=t[0];b.onclick=function(){lbTab=t[0];lbDraw()};T.appendChild(b)});
+ Array.prototype.forEach.call(T.children,function(b){b.classList.toggle('on',b.dataset.k===lbTab)});
+ var rows=lbRows.filter(function(r){return(+r[lbTab]||0)>0}).sort(function(a,b){return(+b[lbTab]||0)-(+a[lbTab]||0)}).slice(0,10),L=$('lbrows');L.innerHTML='';
+ if(!rows.length){L.innerHTML='<p class="empty">No scores yet. Save a name to join.</p>';return}
+ rows.forEach(function(r,i){var d=document.createElement('div');d.className='lbrow'+(r.id===uid?' me':'');var a=document.createElement('span'),v=document.createElement('span');a.textContent=(i+1)+'. '+String(r.name||'?').slice(0,16);v.textContent=fmt(+r[lbTab]||0);d.appendChild(a);d.appendChild(v);L.appendChild(d)})}
+async function lbSubmit(force){if(!LB||!lbName||lbBusy)return;
+ var o={name:lbName,tc:Math.floor(S.tc),td:Math.floor(S.td),rbT:S.rbT,prestige:S.prestige},k=JSON.stringify(o);if(k===lbLast&&force!==true)return;
+ lbBusy=true;try{await LB.doc('lb/'+uid).set(o);lbLast=k;$('lbnote').textContent='Score saved.'}catch(e){$('lbnote').textContent='Could not save your score. You may need Contributor access.'}lbBusy=false}
+setInterval(lbSubmit,30000);
+$('lbsave').onclick=function(){var v=$('lbname').value.replace(/[^A-Za-z0-9 _.-]/g,'').trim().slice(0,16);if(!v)return;lbName=v;$('lbname').value=v;try{localStorage.setItem('ninthlife-name',v)}catch(e){}lbSubmit(true)};
+(async function(){try{if(!window.claude||!claude.use)return;var db=await claude.use('db'),us=await claude.use('user');if(!db||!us)return;uid=await us.id();if(!uid)return;LB=db;
+ $('lbbox').hidden=false;$('lbname').value=lbName;
+ db.collection('lb').onSnapshot(function(s){lbRows=s.docs.map(function(d){var o=Object.assign({},d.data());o.id=d.id;return o});lbDraw()},function(){$('lbnote').textContent='Leaderboard unavailable right now.'});
+ lbDraw()}catch(e){}})();
+draw();
+})();
+</script>
+</body>
+</html>
